@@ -14,7 +14,9 @@ const session = require('express-session');
 // Heroku config: set URLDB=“mongodb+srv://inmanueld:<CualquierPass>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority”
 // mongodb+srv://inmanueld:<password>@ursusgroup-8q85r.mongodb.net/test?retryWrites=true&w=majority
 // mongoose.connect('mongodb+srv://inmanueld:<Kinguys.com>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority')
+process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
 mongoose.connect(process.env.URLDB)
+//mongoose.connect('mongodb://localhost/bd-aplicacion')
     .then(db => console.log('Conectado a la BD'))
     .catch(err => console.log(err));
 
@@ -105,7 +107,6 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
 });
 
 //settings
-process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
 app.set('URLDB', process.env.URLDB);
 app.set('port', process.env.PORT || 3000); //tomar puerto del sistema o 3000
 app.set("view engine", "hbs");

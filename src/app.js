@@ -10,7 +10,11 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 
 //connecting to the DB
-mongoose.connect('mongodb://localhost/bd-aplicacion')
+// bd-aplicacion
+// Heroku config: set URLDB=“mongodb+srv://inmanueld:<CualquierPass>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority”
+// mongodb+srv://inmanueld:<password>@ursusgroup-8q85r.mongodb.net/test?retryWrites=true&w=majority
+// mongoose.connect('mongodb+srv://inmanueld:<Kinguys.com>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority')
+mongoose.connect(process.env.URLDB)
     .then(db => console.log('Conectado a la BD'))
     .catch(err => console.log(err));
 
@@ -54,7 +58,7 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             courses: []
         });
         await nuevoEstudiante.save();
-		
+
         console.log('No se encontraron usuarios previos.\n'+
 		'Se crearon nuevos usuarios:'+
 		'	Estudiante -> id: 2 y pass: estudiante'+
@@ -80,7 +84,7 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
             students: []
         });
         await nuevoCurso.save();
-		
+
 		const nuevoCurso2 = new Course({
             id: 1,
             name: 'Curso por defecto 2',
@@ -92,7 +96,7 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
             students: []
         });
         await nuevoCurso2.save();
-		
+
         console.log('No se encontraron cursos previos.');
     }
     else{
@@ -101,6 +105,8 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
 });
 
 //settings
+process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
+app.set('URLDB', process.env.URLDB);
 app.set('port', process.env.PORT || 3000); //tomar puerto del sistema o 3000
 app.set("view engine", "hbs");
 app.use(session({
@@ -181,7 +187,7 @@ app.post("/register", async (req, res) => {
             res.render("register", {
                 alert: "Ya existe un usuario con este ID"
             });
-            
+
         }
     }
     catch (err) {
@@ -194,7 +200,7 @@ app.post("/register", async (req, res) => {
 
 app.get("/profile", async (req, res) => {
     const user = await User.findOne({id: req.query.id});
-	
+
 	if (user === null && user.role != "coordinador") {
         res.redirect("*");
     }
@@ -219,7 +225,7 @@ app.get("/profile_edit", async (req, res) => {
 app.post("/profile_edit", async (req, res) => {
     var user = await User.findOne({id: req.query.id});console.log(req.query.id);
     var logged = await Logged.findOne({id: req.session.user});
-	
+
     if (req.body.name != "" && typeof req.body.name == 'string') {
 		user.name = req.body.name;
 		if (req.query.id == logged.id) logged.name = req.body.name;
@@ -240,10 +246,10 @@ app.post("/profile_edit", async (req, res) => {
 		user.role = req.body.role;
 		if (req.query.id == logged.id) logged.role = req.body.role;
 	}
- 
+
     await user.save();
 	await logged.save();
-	
+
     res.redirect("/profile?id="+req.session.user);
 });
 
@@ -258,7 +264,7 @@ app.get("/courses", async (req, res) => {
 		args["courses"] = fncs.substract_arrays(await Course.find({}),
 												await fncs.get_user_courses(logged));
     }
-	
+
     res.render("courses", args);
 });
 
@@ -267,7 +273,7 @@ app.post("/courses", (req, res) => {
         if (req.body.action == "add") {
             fncs.add_user_to_course(req.session.user, req.body.id);
 			fncs.add_course_to_user(req.body.id, req.session.user);
-			
+
             res.redirect("/profile?id="+req.session.user);
         }
         else if (req.body.action == "ch_state") {
@@ -306,7 +312,7 @@ app.get("/course", async (req, res) => {
 			students: await fncs.get_course_users(course),
 			user: req.session.user != null ? await User.findOne({id: req.session.user}) : "."
 		};
-	
+
 		res.render("course", args);
 	}
 	else {
@@ -318,7 +324,7 @@ app.post("/course", async (req, res) => {
 	fncs.del_user_from_course(req.body.id, req.body.course_id);
 	fncs.del_course_from_user(req.body.course_id, req.body.id);
 	res.redirect("/course?id="+req.body.course_id);
-});		 
+});
 
 app.post("/new_course", (req, res) => {
     var course = new Course(req.body);
@@ -336,4 +342,3 @@ app.get("*", (req, res) => {
 app.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
 });
-

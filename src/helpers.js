@@ -23,6 +23,9 @@ hbs.registerHelper("get_user", (id) => {
 hbs.registerHelper("if_eq", function(a, b, opts) {
     return (a == b) ? opts.fn(this) : opts.inverse(this);
 });
+hbs.registerHelper("if_neq", function(a, b, opts) {
+    return (a != b) ? opts.fn(this) : opts.inverse(this);
+});
 hbs.registerHelper("if_M", function(a, b, opts) {
     return (a > b) ? opts.fn(this) : opts.inverse(this);
 });

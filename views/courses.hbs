@@ -2,10 +2,16 @@
 <div class="container">
 <div class="container-fluid">
     <table class="table">
+        {{#if_eq user.role "coordinador"}}
+        <h2>Cursos</h2>
+        <p>Aquí puedes ver todos los cursos en la plataforma</p>
+        {{/if_eq}}
+        {{#if_neq user.role "coordinador"}}
         <h2>Cursos disponibles</h2>
         <p>Aquí puedes ver los cursos no inscritos, es decir, aquéllos a los que te puedes inscribir</p>
+        {{/if_neq}}
 		{{#if_eq user.role "docente"}}
-		<p>como docente, puedes matricularte al curso en el que vayas a dar clase</p>
+		<p>Como docente, puedes matricularte al curso en el que vayas a dar clase</p>
 		{{/if_eq}}
 		
         <br>

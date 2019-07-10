@@ -33,7 +33,7 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             id: 0,
             mail: 'coordinador@tdea.com',
             phone: 12345,
-            pass: 'admin',
+            pass: 'coordinador',
             role: 'coordinador',
             courses: []
         });
@@ -64,7 +64,7 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
         console.log('No se encontraron usuarios previos.\n'+
 		'Se crearon nuevos usuarios:'+
 		'	Estudiante -> id: 2 y pass: estudiante'+
-		'	Coordinador -> id: 0 y pass: admin'+
+		'	Coordinador -> id: 0 y pass: coordinador'+
 		'	Docente -> id: 1 y pass: docente');
     }
     else{
@@ -257,13 +257,18 @@ app.post("/profile_edit", async (req, res) => {
 app.get("/courses", async (req, res) => {
     var args = {
         user: await User.findOne({id: req.session.user}),
-        courses: await Course.find({})
+        courses: await Course.find({ status: 'disponible'})
     };
 
 	var logged = await Logged.findOne({});
     if (logged != null) {
-		args["courses"] = fncs.substract_arrays(await Course.find({}),
-												await fncs.get_user_courses(logged));
+        if (logged.role !== 'coordinador') {
+            args["courses"] = fncs.substract_arrays(await Course.find({ status: 'disponible' }),
+                                                    await fncs.get_user_courses(logged));
+        } else {
+            args["courses"] = fncs.substract_arrays(await Course.find({}),
+                                                    await fncs.get_user_courses(logged));
+        };
     }
 
     res.render("courses", args);

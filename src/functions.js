@@ -103,7 +103,31 @@ const add_course = async (course) => {
 };
 
 const change_course_state = async (course_id) => {
-	const course = await Course.findOne({id: course_id});
+    const course = await Course.findOne({id: course_id});
+    var has_instructor = false;
+
+    if (course.status === 'disponible'){ //antes del cambio, se revisa si hay un docente asignado a este curso
+        const instructors = await User.find({ role: 'docente' });
+
+        busqueda: {
+            for (i = 0; i < instructors.length; i++) { 
+                for (j = 0; j < instructors[i].courses.length; j++) {
+                    console.log(instructors[i].courses[j]);
+                    console.log(course._id);
+                    has_instructor = (instructors[i].courses[j].equals(course._id)); //existe un docente asignado a este curso
+                    if (has_instructor){
+                        break busqueda;
+                    }
+                }
+            }
+        }
+        if (!has_instructor){ //no existe un docente asignado al curso
+            var docente = instructors[Math.floor(Math.random() * instructors.length)];
+            docente.courses.push(course); //se asigna el docente al curso
+            await docente.save();
+        }
+    }
+
 	var new_status = course.status == "no disponible" ? "disponible" : "no disponible";
 	await Course.updateOne({id: course_id}, {$set: {status: new_status}});
 };

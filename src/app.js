@@ -43,7 +43,7 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             name: 'Docente1',
             id: 1,
             mail: 'docente@tdea.com',
-            phone: 12345,
+            phone: 4567,
             pass: 'docente',
             role: 'docente',
             courses: []
@@ -77,11 +77,11 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
     if(count == 0){
         const nuevoCurso = new Course({
             id: 0,
-            name: 'Curso por defecto 1',
-            description: 'descripción curso 1',
-            price: -1,
+            name: 'Angular para dummies',
+            description: 'Programación desde cero con el framework Angular',
+            price: 300,
             modality: 'nocturna',
-            hours: 0,
+            hours: 80,
             status: 'no disponible',
             students: []
         });
@@ -89,10 +89,10 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
 
 		const nuevoCurso2 = new Course({
             id: 1,
-            name: 'Curso por defecto 2',
-            description: 'descripción curso 2',
-            price: -1,
-            modality: 'nocturna',
+            name: 'JS Avanzado',
+            description: 'Programación en Javascript usando las mejores prácticas',
+            price: 200,
+            modality: 'diurna',
             hours: 0,
             status: 'disponible',
             students: []

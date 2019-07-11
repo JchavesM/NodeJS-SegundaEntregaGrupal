@@ -11,10 +11,8 @@ const session = require('express-session');
 
 //connecting to the DB
 // bd-aplicacion
-// Heroku config: set URLDB=“mongodb+srv://inmanueld:<CualquierPass>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority”
-// mongodb+srv://inmanueld:<password>@ursusgroup-8q85r.mongodb.net/test?retryWrites=true&w=majority
-// mongoose.connect('mongodb+srv://inmanueld:<Kinguys.com>@ursusgroup-8q85r.mongodb.net/bd-aplicacion?retryWrites=true&w=majority')
-process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
+//process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
+process.end.URLDB = 'mongodb+srv://jpchavesm:7KzXz5Gky7cFWsU@nodejs-tdea-ursus-nh9zi.mongodb.net/bd-aplicacion?retryWrites=true&w=majority'
 mongoose.connect(process.env.URLDB)
 //mongoose.connect('mongodb://localhost/bd-aplicacion')
     .then(db => console.log('Conectado a la BD'))

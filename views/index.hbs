@@ -1,5 +1,4 @@
 {{>header}}
-
 <div class="container">
 <div class="container-fluid">
     <h2>
@@ -9,16 +8,26 @@
     <br>
     <br>
     <br>
-    <div class="container-fluid btn-group">
-        <div class="row">
-            <a class="btn btn-success" href="/login">Iniciar Sesión</a>&nbsp;&nbsp;
-            <a class="btn btn-primary" href="/register">Registrarse</a>&nbsp;&nbsp;
-            <a class="btn btn-info" href="/courses">Ver Cursos</a>
-        </div>
-    </div>
+    <nav>
+      <ul class="pagination pagination-lg">
+        <li class="page-item"><a class="page-link" href="/login#">Iniciar Sesión</a></li>
+        <li class="page-item"><a class="page-link" href="/register">Registrarse</a></li>
+        <li class="page-item"><a class="page-link" href="/courses">Ver Cursos</a></li>
+        <li class="page-item"><a class="page-link" href="/chat">Chat</a></li>
+      </ul>
+    </nav>
 </div>
 </div>
 
+<script>
+    socket = io();
+    socket.on("message", (data) => {
+        console.log(data);
+    });
 
+    socket.emit("message", "im connected");
+
+    
+</script>
 
 {{>footer}}

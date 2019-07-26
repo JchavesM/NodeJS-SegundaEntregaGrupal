@@ -1,0 +1,55 @@
+{{>header}}
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+<h2>Chat</h2>
+<div class="container">
+  <ul id="messages" style="height: 210px; overflow: auto"></ul>
+  <form id="chat_input" action="/" method="POST" id="chatForm">
+    <div class="form-group">
+    <div class="input-group">
+      <input class="input" id="txt" type="text"/>
+      <span class="input-addon-btn">
+        <button class="btn green">Send</button>
+      </span>
+    </div>
+    </div>
+  </form>
+</div>
+
+
+
+<script>
+    socket = io();
+    
+    $("#chat_input").submit(function(e) { 
+        e.preventDefault();
+        var msg = $("#txt").val();
+        if (msg != "") {
+            socket.emit("message", msg);
+            $("#txt").val("");
+        }
+    });
+
+    socket.on("message", (data) => {
+        console.log(data);
+        $("#messages").append($("<li>").html(data));
+    });
+    
+    socket.on("is_online", (username) => {console.log(username);
+        // $("#sub").append("username: "+username);
+        $("#messages").append($("<li>").html("<strong>"+username+"</strong><i> joined the chat...</i>"));
+    });
+
+    socket.on("is_offline", (username) => {
+        $("#messages").append($("<li>").html("<strong>"+username+"</strong><i> has left the chat...</i>"));
+    });
+
+    // getting user chat nickname
+    do {
+        var username = prompt("Introduce tu nick");
+    } while(username == null);
+        
+    socket.emit("is_online", username);
+</script>
+
+{{>footer}}

@@ -8,13 +8,24 @@ const fncs = require("./functions");
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const multer = require("multer");
+const server = require("http").createServer(app);
+const io = require("socket.io")(server);
+
+/*var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads");
+    },
+    filename: function (req, file, cb) {
+        cb(null, "photo" + path.extname(file.originalname));
+    }
+});*/
+var upload = multer({});
 
 //connecting to the DB
-// bd-aplicacion
-//process.env.URLDB = 'mongodb://localhost/bd-aplicacion';
 process.env.URLDB = 'mongodb+srv://jpchavesm:7KzXz5Gky7cFWsU@nodejs-tdea-ursus-nh9zi.mongodb.net/bd-aplicacion?retryWrites=true&w=majority';
-mongoose.connect(process.env.URLDB)
-//mongoose.connect('mongodb://localhost/bd-aplicacion')
+// mongoose.connect(process.env.URLDB)
+mongoose.connect('mongodb://localhost/bd-aplicacion')
     .then(db => console.log('Conectado a la BD'))
     .catch(err => console.log(err));
 
@@ -33,7 +44,8 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             phone: 12345,
             pass: 'coordinador',
             role: 'coordinador',
-            courses: []
+            courses: [],
+            photo: "sdfsf"
         });
         await nuevoCoordinador.save();
 
@@ -44,7 +56,8 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             phone: 4567,
             pass: 'docente',
             role: 'docente',
-            courses: []
+            courses: [],
+            photo: "asfdsa"
         });
         await nuevoDocente.save();
 
@@ -55,7 +68,8 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
             phone: 12345,
             pass: 'estudiante',
             role: 'aspirante',
-            courses: []
+            courses: [],
+            photo: "fdfd"
         });
         await nuevoEstudiante.save();
 
@@ -120,6 +134,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 hbs.registerPartials(path.join(__dirname, "../partials"));
 app.use(body_parser.urlencoded({extended: false}));
 
+// paths
 app.get("/", (req, res) => {
     res.render("index", {
         estudiante: "Mario"
@@ -144,7 +159,8 @@ app.post("/login", async (req, res) => {
                 phone: user.phone,
                 pass: user.pass,
                 role: user.role,
-                courses: user.courses
+                courses: user.courses,
+                photo: user.photo
             });
 			await logged_user.save();
 			req.session.user = user.id;
@@ -172,10 +188,20 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
-app.post("/register", async (req, res) => {
+app.post("/register", upload.single("photo"), async (req, res) => {
     try {
         const repetido = await User.findOne({ id: req.body.id });
-        const new_user = new User(req.body);
+        console.log(req.body);
+        const new_user = new User({
+            name: req.body.name,
+            id: req.body.id,
+            mail: req.body.mail,
+            phone: req.body.phone,
+            pass: req.body.pass,
+            role: req.body.role,
+            courses: [],
+            photo: req.file.buffer
+        });
         if(repetido === null) {
             await new_user.save();
             res.render("register", {
@@ -197,6 +223,10 @@ app.post("/register", async (req, res) => {
     }
 });
 
+app.get("/chat", (req, res) => {
+    res.render("chat");
+});
+
 app.get("/profile", async (req, res) => {
     const user = await User.findOne({id: req.query.id});
 
@@ -206,6 +236,7 @@ app.get("/profile", async (req, res) => {
     else {
         res.render("profile", {
             user: user,
+            photo: user.photo.toString("base64"),
             courses: await fncs.get_user_courses(user)
         });
     }
@@ -221,7 +252,7 @@ app.get("/profile_edit", async (req, res) => {
 	}
 });
 
-app.post("/profile_edit", async (req, res) => {
+app.post("/profile_edit", upload.single("photo"), async (req, res) => {
     var user = await User.findOne({id: req.query.id});console.log(req.query.id);
     var logged = await Logged.findOne({id: req.session.user});
 
@@ -241,6 +272,10 @@ app.post("/profile_edit", async (req, res) => {
 		user.phone = req.body.phone;
 		if (req.query.id == logged.id) logged.phone = req.body.phone;
 	}
+    if (req.body.photo != "") {
+        user.photo = req.file.buffer;
+        logged.photo = req.file.buffer;
+    }
 	if ("role" in req.body) {
 		user.role = req.body.role;
 		if (req.query.id == logged.id) logged.role = req.body.role;
@@ -342,7 +377,31 @@ app.get("*", (req, res) => {
     });
 });
 
-//starting the server
-app.listen(app.get('port'), () => {
+// sockets
+io.on("connection", function(socket) {
+	console.log("Un cliente se ha conectado");
+    
+    socket.on("room", function(room) {
+        socket.room = room;
+        socket.join(room);
+    });
+    
+    socket.on("is_online", function(username) {
+        socket.username = username;
+        io.sockets.in(socket.room).emit("is_online", socket.username);
+    });
+
+    socket.on("is_offline", function(username) {
+        socket.leave(socket.room);
+        io.sockets.in(socket.room).emit("is_offline", socket.username);
+    });
+
+    socket.on("message", function(message) {
+        io.sockets.in(socket.room).emit("message", "<strong>" + socket.username + "</strong>: " + message);
+    });
+});
+
+// starting the server
+server.listen(app.get('port'), () => {
     console.log(`Server on port ${app.get('port')}`);
 });

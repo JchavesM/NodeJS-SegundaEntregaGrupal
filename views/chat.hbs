@@ -1,0 +1,64 @@
+{{>header}}
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+<div class="container">
+  <div class="card">
+  <div class="card-header">
+    CHAT
+  </div>
+  <div class="card-body">
+  <ul id="messages" style="height: 210px; overflow: auto"></ul>
+  <form id="chat_input" action="/" method="POST" id="chatForm">
+    <div class="form-group">
+    <div class="input-group" style="width: 300px">
+      <input class="inputform-control" id="txt" type="text"/>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary">Send</button>
+      </div>
+    </div>
+    </div>
+  </form>
+  </div>
+</div>
+
+<script>
+    socket = io();
+    
+    $("#chat_input").submit(function(e) {
+        e.preventDefault();
+        var msg = $("#txt").val();
+        if (msg != "") {
+            socket.emit("message", msg);
+            $("#txt").val("");
+        }
+    });
+
+    socket.on("message", (data) => {
+        console.log(data);
+        $("#messages").append($("<li>").html(data));
+    });
+    
+    socket.on("is_online", (username) => {console.log(username);
+        // $("#sub").append("username: "+username);
+        $("#messages").append($("<li>").html("<strong>"+username+"</strong><i> ha entrado en el chat...</i>"));
+    });
+
+    socket.on("is_offline", (username) => {
+        $("#messages").append($("<li>").html("<strong>"+username+"</strong><i> ha salido del chat...</i>"));
+    });
+
+    // getting user chat nickname and roomname
+        
+    do {
+        var room = prompt("¿A qué sala deseas unirte? (Sala1, Sala2)");
+    } while(room == null && (room == "Sala1" || room == "Sala2"));
+    socket.emit("room", room);
+
+    do {
+        var username = prompt("Introduce tu nick");
+    } while(username == null);    
+    socket.emit("is_online", username);
+    
+</script>
+
+{{>footer}}

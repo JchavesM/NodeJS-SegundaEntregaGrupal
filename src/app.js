@@ -12,6 +12,7 @@ const multer = require("multer");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const notifier = require('node-notifier');
+const sgMail = require('@sendgrid/mail');
 
 /*var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -23,21 +24,25 @@ const notifier = require('node-notifier');
 });*/
 var upload = multer({});
 
+// Envío de correos
+process.env.SENDGRID_API_KEY = 'SG.05p_tCrCSK6rcNvsfyhy_Q.vqGsoAVGtHnugipzcfSOf8hpxuLc-5NQxp06_Kr0zxc';
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 //connecting to the DB
 process.env.URLDB = 'mongodb+srv://jpchavesm:7KzXz5Gky7cFWsU@nodejs-tdea-ursus-nh9zi.mongodb.net/bd-aplicacion?retryWrites=true&w=majority';
 mongoose.connect(process.env.URLDB)
-//mongoose.connect('mongodb://localhost/bd-aplicacion')
+    //mongoose.connect('mongodb://localhost/bd-aplicacion')
     .then(db => console.log('Conectado a la BD'))
     .catch(err => console.log(err));
 
 var User = require('../models/user');
 var Course = require('../models/course');
 var Logged = require('../models/logged');
-Logged.remove({}, function(err, removed) {});
+Logged.remove({}, function (err, removed) { });
 
 //Inicializacion de una BD virgen
-const queryUsers = User.estimatedDocumentCount( async (err,count) => {
-    if(count == 0){
+const queryUsers = User.estimatedDocumentCount(async (err, count) => {
+    if (count == 0) {
         const nuevoCoordinador = new User({
             name: 'Coordinador1',
             id: 0,
@@ -62,7 +67,7 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
         });
         await nuevoDocente.save();
 
-		const nuevoEstudiante = new User({
+        const nuevoEstudiante = new User({
             name: 'Estudiante1',
             id: 2,
             mail: 'esteban@tdea.com',
@@ -74,20 +79,20 @@ const queryUsers = User.estimatedDocumentCount( async (err,count) => {
         });
         await nuevoEstudiante.save();
 
-        console.log('No se encontraron usuarios previos.\n'+
-		'Se crearon nuevos usuarios:'+
-		'	Estudiante -> id: 2 y pass: estudiante'+
-		'	Coordinador -> id: 0 y pass: coordinador'+
-		'	Docente -> id: 1 y pass: docente');
+        console.log('No se encontraron usuarios previos.\n' +
+            'Se crearon nuevos usuarios:' +
+            '	Estudiante -> id: 2 y pass: estudiante' +
+            '	Coordinador -> id: 0 y pass: coordinador' +
+            '	Docente -> id: 1 y pass: docente');
     }
-    else{
+    else {
         console.log('Se han encontrado usuarios guardados en la base de datos');
     }
 });
 
 //Inicializacion de una BD virgen
-const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
-    if(count == 0){
+const queryCourses = Course.estimatedDocumentCount(async (err, count) => {
+    if (count == 0) {
         const nuevoCurso = new Course({
             id: 0,
             name: 'Angular para dummies',
@@ -100,7 +105,7 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
         });
         await nuevoCurso.save();
 
-		const nuevoCurso2 = new Course({
+        const nuevoCurso2 = new Course({
             id: 1,
             name: 'JS Avanzado',
             description: 'Programación en Javascript usando las mejores prácticas',
@@ -114,7 +119,7 @@ const queryCourses = Course.estimatedDocumentCount( async (err,count) => {
 
         console.log('No se encontraron cursos previos.');
     }
-    else{
+    else {
         console.log('Se han encontrado cursos guardados en la base de datos');
     }
 });
@@ -124,16 +129,16 @@ app.set('URLDB', process.env.URLDB);
 app.set('port', process.env.PORT || 3000); //tomar puerto del sistema o 3000
 app.set("view engine", "hbs");
 app.use(session({
-	secret: "kayboard cat",
-	resave: false,
-	saveUninitialized: true
+    secret: "kayboard cat",
+    resave: false,
+    saveUninitialized: true
 }));
 
 //middlewares - funcion ejecutada antes de las rutas
 app.use(morgan('dev')); //permite ver respuestas del servidor al cliente
 app.use(express.static(path.join(__dirname, "../public")));
 hbs.registerPartials(path.join(__dirname, "../partials"));
-app.use(body_parser.urlencoded({extended: false}));
+app.use(body_parser.urlencoded({ extended: false }));
 
 // paths
 app.get("/", (req, res) => {
@@ -143,8 +148,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-    Logged.remove({}, function(err, removed) {});
-    
+    Logged.remove({}, function (err, removed) { });
+
     // Object
     notifier.notify({
         title: 'My notification',
@@ -159,7 +164,7 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ id: id });
 
     if (user !== null) {
-        if(user.pass === req.body.pass) {
+        if (user.pass === req.body.pass) {
             const logged_user = new Logged({
                 name: user.name,
                 id: user.id,
@@ -170,11 +175,11 @@ app.post("/login", async (req, res) => {
                 courses: user.courses,
                 photo: user.photo
             });
-			await logged_user.save();
-			req.session.user = user.id;
-			res.redirect("/profile?id="+req.body.id);
+            await logged_user.save();
+            req.session.user = user.id;
+            res.redirect("/profile?id=" + req.body.id);
         }
-        else{
+        else {
             res.render("login", {
                 alert: 'Nombre de usuario o contraseña equivocada!'
             });
@@ -186,8 +191,8 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/logout", async (req, res) => {
-    await Logged.remove({id: req.session.user});
-	req.session.user = null;
+    await Logged.remove({ id: req.session.user });
+    req.session.user = null;
 
     res.redirect("/");
 });
@@ -210,8 +215,19 @@ app.post("/register", upload.single("photo"), async (req, res) => {
             courses: [],
             photo: req.file.buffer
         });
-        if(repetido === null) {
+        if (repetido === null) {
             await new_user.save();
+            const msg = {
+                to: req.body.mail,
+                from: 'ursusgroup@gmail.com',
+                subject: 'Bienvenido a UrsusGroup',
+                text: 'Ursus Group TdeA',
+                html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
+                <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
+                <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
+            };
+            console.log(msg);
+            sgMail.send(msg);
             res.render("register", {
                 alert: "Usuario creado con éxito!"
             });
@@ -224,7 +240,7 @@ app.post("/register", upload.single("photo"), async (req, res) => {
         }
     }
     catch (err) {
-        console.log("Error al registrar:\n"+err);
+        console.log("Error al registrar:\n" + err);
         res.render("register", {
             alert: "Error registrando nuevo usuario!"
         });
@@ -236,9 +252,9 @@ app.get("/chat", (req, res) => {
 });
 
 app.get("/profile", async (req, res) => {
-    const user = await User.findOne({id: req.query.id});
+    const user = await User.findOne({ id: req.query.id });
 
-	if (user === null && user.role != "coordinador") {
+    if (user === null && user.role != "coordinador") {
         res.redirect("*");
     }
     else {
@@ -251,64 +267,66 @@ app.get("/profile", async (req, res) => {
 });
 
 app.get("/profile_edit", async (req, res) => {
-	if (req.session.user != null) {
-		res.render("profile_edit", {curr_user: await User.findOne({id: req.session.user}),
-									user: await User.findOne({id: req.query.id})});
-	}
-	else {
-		res.render("error");
-	}
+    if (req.session.user != null) {
+        res.render("profile_edit", {
+            curr_user: await User.findOne({ id: req.session.user }),
+            user: await User.findOne({ id: req.query.id })
+        });
+    }
+    else {
+        res.render("error");
+    }
 });
 
 app.post("/profile_edit", upload.single("photo"), async (req, res) => {
-    var user = await User.findOne({id: req.query.id});console.log(req.query.id);
-    var logged = await Logged.findOne({id: req.session.user});
+    var user = await User.findOne({ id: req.query.id }); console.log(req.query.id);
+    var logged = await Logged.findOne({ id: req.session.user });
 
     if (req.body.name != "" && typeof req.body.name == 'string') {
-		user.name = req.body.name;
-		if (req.query.id == logged.id) logged.name = req.body.name;
-	}
+        user.name = req.body.name;
+        if (req.query.id == logged.id) logged.name = req.body.name;
+    }
     if (req.body.mail != "" && typeof req.body.mail == 'string') {
-		user.mail = req.body.mail;
-		if (req.query.id == logged.id) logged.mail = req.body.mail;
-	}
+        user.mail = req.body.mail;
+        if (req.query.id == logged.id) logged.mail = req.body.mail;
+    }
     if (req.body.pass != "" && typeof req.body.pass == 'string') {
-		user.pass = req.body.pass;
-		if (req.query.id == logged.id) logged.pass = req.body.pass;
-	}
+        user.pass = req.body.pass;
+        if (req.query.id == logged.id) logged.pass = req.body.pass;
+    }
     if (req.body.phone != "" && typeof req.body.phone == 'number') {
-		user.phone = req.body.phone;
-		if (req.query.id == logged.id) logged.phone = req.body.phone;
-	}
+        user.phone = req.body.phone;
+        if (req.query.id == logged.id) logged.phone = req.body.phone;
+    }
     if (req.body.photo != "") {
         user.photo = req.file.buffer;
         logged.photo = req.file.buffer;
     }
-	if ("role" in req.body) {
-		user.role = req.body.role;
-		if (req.query.id == logged.id) logged.role = req.body.role;
-	}
+    if ("role" in req.body) {
+        user.role = req.body.role;
+        if (req.query.id == logged.id) logged.role = req.body.role;
+    }
 
     await user.save();
-	await logged.save();
+    await logged.save();
 
-    res.redirect("/profile?id="+req.session.user);
+    res.redirect("/profile?id=" + req.session.user);
 });
 
 app.get("/courses", async (req, res) => {
     var args = {
-        user: await User.findOne({id: req.session.user}),
-        courses: await Course.find({ status: 'disponible'})
+        user: await User.findOne({ id: req.session.user }),
+        courses: await Course.find({ status: 'disponible' })
     };
 
-	var logged = await Logged.findOne({});
+    var logged = await Logged.findOne({});
     if (logged != null) {
         if (logged.role !== 'coordinador') {
             args["courses"] = fncs.substract_arrays(await Course.find({ status: 'disponible' }),
-                                                    await fncs.get_user_courses(logged));
+                await fncs.get_user_courses(logged));
         } else {
             args["courses"] = fncs.substract_arrays(await Course.find({}),
-                                                    await fncs.get_user_courses(logged));
+                await fncs.get_user_courses(logged));
         };
     }
 
@@ -319,9 +337,9 @@ app.post("/courses", (req, res) => {
     try {
         if (req.body.action == "add") {
             fncs.add_user_to_course(req.session.user, req.body.id);
-			fncs.add_course_to_user(req.body.id, req.session.user);
+            fncs.add_course_to_user(req.body.id, req.session.user);
 
-            res.redirect("/profile?id="+req.session.user);
+            res.redirect("/profile?id=" + req.session.user);
         }
         else if (req.body.action == "ch_state") {
             fncs.change_course_state(req.body.id);
@@ -333,7 +351,7 @@ app.post("/courses", (req, res) => {
                 fncs.del_course_from_user(req.body.id, req.session.user);
             }
 
-            res.redirect("/profile?id="+req.session.user);
+            res.redirect("/profile?id=" + req.session.user);
         }
     }
     catch (err) {
@@ -342,41 +360,43 @@ app.post("/courses", (req, res) => {
 });
 
 app.get("/students", async (req, res) => {
-	if (req.session.user != null) {
-		res.render("students", {students: await User.find({}),
-							    curr_user: req.session.user});
-	}
-	else {
-		res.render("error");
-	}
+    if (req.session.user != null) {
+        res.render("students", {
+            students: await User.find({}),
+            curr_user: req.session.user
+        });
+    }
+    else {
+        res.render("error");
+    }
 });
 
 app.get("/course", async (req, res) => {
-	if (req.session.user != null) {
-		var course = await Course.findOne({id: req.query.id});
-		var args = {
-			course: course,
-			students: await fncs.get_course_users(course),
-			user: req.session.user != null ? await User.findOne({id: req.session.user}) : "."
-		};
+    if (req.session.user != null) {
+        var course = await Course.findOne({ id: req.query.id });
+        var args = {
+            course: course,
+            students: await fncs.get_course_users(course),
+            user: req.session.user != null ? await User.findOne({ id: req.session.user }) : "."
+        };
 
-		res.render("course", args);
-	}
-	else {
-		res.render("error");
-	}
+        res.render("course", args);
+    }
+    else {
+        res.render("error");
+    }
 });
 
 app.post("/course", async (req, res) => {
-	fncs.del_user_from_course(req.body.id, req.body.course_id);
-	fncs.del_course_from_user(req.body.course_id, req.body.id);
-	res.redirect("/course?id="+req.body.course_id);
+    fncs.del_user_from_course(req.body.id, req.body.course_id);
+    fncs.del_course_from_user(req.body.course_id, req.body.id);
+    res.redirect("/course?id=" + req.body.course_id);
 });
 
 app.post("/new_course", (req, res) => {
     var course = new Course(req.body);
     fncs.add_course(course);
-    res.redirect("/profile?id="+req.session.user);
+    res.redirect("/profile?id=" + req.session.user);
 });
 
 app.get("*", (req, res) => {
@@ -386,25 +406,25 @@ app.get("*", (req, res) => {
 });
 
 // sockets
-io.on("connection", function(socket) {
-	console.log("Un cliente se ha conectado");
-    
-    socket.on("room", function(room) {
+io.on("connection", function (socket) {
+    console.log("Un cliente se ha conectado");
+
+    socket.on("room", function (room) {
         socket.room = room;
         socket.join(room);
     });
-    
-    socket.on("is_online", function(username) {
+
+    socket.on("is_online", function (username) {
         socket.username = username;
         io.sockets.in(socket.room).emit("is_online", socket.username);
     });
 
-    socket.on("is_offline", function(username) {
+    socket.on("is_offline", function (username) {
         socket.leave(socket.room);
         io.sockets.in(socket.room).emit("is_offline", socket.username);
     });
 
-    socket.on("message", function(message) {
+    socket.on("message", function (message) {
         io.sockets.in(socket.room).emit("message", "<strong>" + socket.username + "</strong>: " + message);
     });
 });

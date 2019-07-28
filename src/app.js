@@ -39,7 +39,7 @@ var Logged = require('../models/logged');
 Logged.remove({}, function(err, removed) {});
 
 // Envío de correos
-process.env.SENDGRID_API_KEY = 'SG.05p_tCrCSK6rcNvsfyhy_Q.vqGsoAVGtHnugipzcfSOf8hpxuLc-5NQxp06_Kr0zxc';
+process.env.SENDGRID_API_KEY = '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';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const msgPrueba = {

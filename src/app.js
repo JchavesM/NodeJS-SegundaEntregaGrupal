@@ -11,6 +11,7 @@ const session = require('express-session');
 const multer = require("multer");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
+const notifier = require('node-notifier');
 
 /*var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -24,8 +25,8 @@ var upload = multer({});
 
 //connecting to the DB
 process.env.URLDB = 'mongodb+srv://jpchavesm:7KzXz5Gky7cFWsU@nodejs-tdea-ursus-nh9zi.mongodb.net/bd-aplicacion?retryWrites=true&w=majority';
-// mongoose.connect(process.env.URLDB)
-mongoose.connect('mongodb://localhost/bd-aplicacion')
+mongoose.connect(process.env.URLDB)
+//mongoose.connect('mongodb://localhost/bd-aplicacion')
     .then(db => console.log('Conectado a la BD'))
     .catch(err => console.log(err));
 
@@ -142,7 +143,14 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-	Logged.remove({}, function(err, removed) {});
+    Logged.remove({}, function(err, removed) {});
+    
+    // Object
+    notifier.notify({
+        title: 'My notification',
+        message: 'Hello, there!'
+    });
+
     res.render("login");
 });
 

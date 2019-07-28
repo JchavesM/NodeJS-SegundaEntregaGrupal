@@ -24,9 +24,7 @@ const sgMail = require('@sendgrid/mail');
 });*/
 var upload = multer({});
 
-// Envío de correos
-process.env.SENDGRID_API_KEY = 'SG.05p_tCrCSK6rcNvsfyhy_Q.vqGsoAVGtHnugipzcfSOf8hpxuLc-5NQxp06_Kr0zxc';
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 
 //connecting to the DB
 process.env.URLDB = 'mongodb+srv://jpchavesm:7KzXz5Gky7cFWsU@nodejs-tdea-ursus-nh9zi.mongodb.net/bd-aplicacion?retryWrites=true&w=majority';
@@ -39,6 +37,25 @@ var User = require('../models/user');
 var Course = require('../models/course');
 var Logged = require('../models/logged');
 Logged.remove({}, function(err, removed) {});
+
+// Envío de correos
+process.env.SENDGRID_API_KEY = 'SG.05p_tCrCSK6rcNvsfyhy_Q.vqGsoAVGtHnugipzcfSOf8hpxuLc-5NQxp06_Kr0zxc';
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const msgPrueba = {
+    to: 'jaeparraro@unal.edu.co',
+    from: 'edkestebanpr23@gmail.com',
+    subject: 'Bienvenido a UrsusGroup',
+    text: 'Ursus Group - TdeA',
+    html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
+    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
+    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
+};
+alert(msgPrueba);
+sgMail.send(msgPrueba).then((res) => {
+    alert("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
+    // console.log(res);
+});
 
 //Inicializacion de una BD virgen
 const queryUsers = User.estimatedDocumentCount(async(err, count) => {
@@ -215,7 +232,7 @@ app.post("/register", upload.single("photo"), async(req, res) => {
             await new_user.save();
             const msg = {
                 to: req.body.mail,
-                from: 'ursusgroup@gmail.com',
+                from: 'edkestebanpr23@gmail.com',
                 subject: 'Bienvenido a UrsusGroup',
                 text: 'Ursus Group TdeA',
                 html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
@@ -224,8 +241,8 @@ app.post("/register", upload.single("photo"), async(req, res) => {
             };
             console.log(msg);
             sgMail.send(msg).then((res) => {
-                console.log("Correo enviado con éxito!");
-                console.log(res);
+                console.log("Correo enviado con éxito! a " + req.body.mail);
+                // console.log(res);
             });
             res.render("register", {
                 alert: "Usuario creado con éxito! Se ha enviado un mensaje de bienvenida a tu correo, verifica carpeta de Spam."

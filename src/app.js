@@ -42,20 +42,20 @@ Logged.remove({}, function(err, removed) {});
 process.env.SENDGRID_API_KEY = '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';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const msgPrueba = {
-    to: 'jaeparraro@unal.edu.co',
-    from: 'edkestebanpr23@gmail.com',
-    subject: 'Bienvenido a UrsusGroup',
-    text: 'Ursus Group - TdeA',
-    html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
-    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
-    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
-};
-console.log(msgPrueba);
-sgMail.send(msgPrueba).then((res) => {
-    console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
-    // console.log(res);
-});
+// const msgPrueba = {
+//     to: 'jaeparraro@unal.edu.co',
+//     from: 'edkestebanpr23@gmail.com',
+//     subject: 'Bienvenido a UrsusGroup',
+//     text: 'Ursus Group - TdeA',
+//     html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
+//     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
+//     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
+// };
+// console.log(msgPrueba);
+// sgMail.send(msgPrueba).then((res) => {
+//     console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
+//     // console.log(res);
+// });
 
 //Inicializacion de una BD virgen
 const queryUsers = User.estimatedDocumentCount(async(err, count) => {

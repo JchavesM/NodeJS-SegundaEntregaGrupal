@@ -51,9 +51,9 @@ const msgPrueba = {
     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
 };
-alert(msgPrueba);
+console.log(msgPrueba);
 sgMail.send(msgPrueba).then((res) => {
-    alert("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
+    console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
     // console.log(res);
 });
 

@@ -38,10 +38,10 @@ mongoose.connect(process.env.URLDB)
 var User = require('../models/user');
 var Course = require('../models/course');
 var Logged = require('../models/logged');
-Logged.remove({}, function (err, removed) { });
+Logged.remove({}, function(err, removed) {});
 
 //Inicializacion de una BD virgen
-const queryUsers = User.estimatedDocumentCount(async (err, count) => {
+const queryUsers = User.estimatedDocumentCount(async(err, count) => {
     if (count == 0) {
         const nuevoCoordinador = new User({
             name: 'Coordinador1',
@@ -84,14 +84,13 @@ const queryUsers = User.estimatedDocumentCount(async (err, count) => {
             '	Estudiante -> id: 2 y pass: estudiante' +
             '	Coordinador -> id: 0 y pass: coordinador' +
             '	Docente -> id: 1 y pass: docente');
-    }
-    else {
+    } else {
         console.log('Se han encontrado usuarios guardados en la base de datos');
     }
 });
 
 //Inicializacion de una BD virgen
-const queryCourses = Course.estimatedDocumentCount(async (err, count) => {
+const queryCourses = Course.estimatedDocumentCount(async(err, count) => {
     if (count == 0) {
         const nuevoCurso = new Course({
             id: 0,
@@ -118,8 +117,7 @@ const queryCourses = Course.estimatedDocumentCount(async (err, count) => {
         await nuevoCurso2.save();
 
         console.log('No se encontraron cursos previos.');
-    }
-    else {
+    } else {
         console.log('Se han encontrado cursos guardados en la base de datos');
     }
 });
@@ -148,7 +146,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-    Logged.remove({}, function (err, removed) { });
+    Logged.remove({}, function(err, removed) {});
 
     // Object
     notifier.notify({
@@ -159,7 +157,7 @@ app.get("/login", (req, res) => {
     res.render("login");
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", async(req, res) => {
     const id = req.body.id;
     const user = await User.findOne({ id: id });
 
@@ -178,19 +176,17 @@ app.post("/login", async (req, res) => {
             await logged_user.save();
             req.session.user = user.id;
             res.redirect("/profile?id=" + req.body.id);
-        }
-        else {
+        } else {
             res.render("login", {
                 alert: 'Nombre de usuario o contraseña equivocada!'
             });
         }
-    }
-    else {
+    } else {
         res.render("register");
     }
 });
 
-app.get("/logout", async (req, res) => {
+app.get("/logout", async(req, res) => {
     await Logged.remove({ id: req.session.user });
     req.session.user = null;
 
@@ -201,7 +197,7 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
-app.post("/register", upload.single("photo"), async (req, res) => {
+app.post("/register", upload.single("photo"), async(req, res) => {
     try {
         const repetido = await User.findOne({ id: req.body.id });
         console.log(req.body);
@@ -227,19 +223,20 @@ app.post("/register", upload.single("photo"), async (req, res) => {
                 <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
             };
             console.log(msg);
-            sgMail.send(msg);
-            res.render("register", {
-                alert: "Usuario creado con éxito!"
+            sgMail.send(msg).then((res) => {
+                console.log("Correo enviado con éxito!");
+                console.log(res);
             });
-        }
-        else {
+            res.render("register", {
+                alert: "Usuario creado con éxito! Se ha enviado un mensaje de bienvenida a tu correo, verifica carpeta de Spam."
+            });
+        } else {
             res.render("register", {
                 alert: "Ya existe un usuario con este ID"
             });
 
         }
-    }
-    catch (err) {
+    } catch (err) {
         console.log("Error al registrar:\n" + err);
         res.render("register", {
             alert: "Error registrando nuevo usuario!"
@@ -251,13 +248,12 @@ app.get("/chat", (req, res) => {
     res.render("chat");
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", async(req, res) => {
     const user = await User.findOne({ id: req.query.id });
 
     if (user === null && user.role != "coordinador") {
         res.redirect("*");
-    }
-    else {
+    } else {
         res.render("profile", {
             user: user,
             photo: user.photo.toString("base64"),
@@ -266,20 +262,20 @@ app.get("/profile", async (req, res) => {
     }
 });
 
-app.get("/profile_edit", async (req, res) => {
+app.get("/profile_edit", async(req, res) => {
     if (req.session.user != null) {
         res.render("profile_edit", {
             curr_user: await User.findOne({ id: req.session.user }),
             user: await User.findOne({ id: req.query.id })
         });
-    }
-    else {
+    } else {
         res.render("error");
     }
 });
 
-app.post("/profile_edit", upload.single("photo"), async (req, res) => {
-    var user = await User.findOne({ id: req.query.id }); console.log(req.query.id);
+app.post("/profile_edit", upload.single("photo"), async(req, res) => {
+    var user = await User.findOne({ id: req.query.id });
+    console.log(req.query.id);
     var logged = await Logged.findOne({ id: req.session.user });
 
     if (req.body.name != "" && typeof req.body.name == 'string') {
@@ -313,7 +309,7 @@ app.post("/profile_edit", upload.single("photo"), async (req, res) => {
     res.redirect("/profile?id=" + req.session.user);
 });
 
-app.get("/courses", async (req, res) => {
+app.get("/courses", async(req, res) => {
     var args = {
         user: await User.findOne({ id: req.session.user }),
         courses: await Course.find({ status: 'disponible' })
@@ -340,38 +336,34 @@ app.post("/courses", (req, res) => {
             fncs.add_course_to_user(req.body.id, req.session.user);
 
             res.redirect("/profile?id=" + req.session.user);
-        }
-        else if (req.body.action == "ch_state") {
+        } else if (req.body.action == "ch_state") {
             fncs.change_course_state(req.body.id);
             res.redirect("/courses");
-        }
-        else {
-            if (req.body.action == "del") {  // user deleting himself from course
+        } else {
+            if (req.body.action == "del") { // user deleting himself from course
                 fncs.del_user_from_course(req.session.user, req.body.id);
                 fncs.del_course_from_user(req.body.id, req.session.user);
             }
 
             res.redirect("/profile?id=" + req.session.user);
         }
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
     }
 });
 
-app.get("/students", async (req, res) => {
+app.get("/students", async(req, res) => {
     if (req.session.user != null) {
         res.render("students", {
             students: await User.find({}),
             curr_user: req.session.user
         });
-    }
-    else {
+    } else {
         res.render("error");
     }
 });
 
-app.get("/course", async (req, res) => {
+app.get("/course", async(req, res) => {
     if (req.session.user != null) {
         var course = await Course.findOne({ id: req.query.id });
         var args = {
@@ -381,13 +373,12 @@ app.get("/course", async (req, res) => {
         };
 
         res.render("course", args);
-    }
-    else {
+    } else {
         res.render("error");
     }
 });
 
-app.post("/course", async (req, res) => {
+app.post("/course", async(req, res) => {
     fncs.del_user_from_course(req.body.id, req.body.course_id);
     fncs.del_course_from_user(req.body.course_id, req.body.id);
     res.redirect("/course?id=" + req.body.course_id);
@@ -406,25 +397,25 @@ app.get("*", (req, res) => {
 });
 
 // sockets
-io.on("connection", function (socket) {
+io.on("connection", function(socket) {
     console.log("Un cliente se ha conectado");
 
-    socket.on("room", function (room) {
+    socket.on("room", function(room) {
         socket.room = room;
         socket.join(room);
     });
 
-    socket.on("is_online", function (username) {
+    socket.on("is_online", function(username) {
         socket.username = username;
         io.sockets.in(socket.room).emit("is_online", socket.username);
     });
 
-    socket.on("is_offline", function (username) {
+    socket.on("is_offline", function(username) {
         socket.leave(socket.room);
         io.sockets.in(socket.room).emit("is_offline", socket.username);
     });
 
-    socket.on("message", function (message) {
+    socket.on("message", function(message) {
         io.sockets.in(socket.room).emit("message", "<strong>" + socket.username + "</strong>: " + message);
     });
 });

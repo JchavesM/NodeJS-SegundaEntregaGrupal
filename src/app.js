@@ -11,7 +11,6 @@ const session = require('express-session');
 const multer = require("multer");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-const notifier = require('node-notifier');
 const sgMail = require('@sendgrid/mail');
 
 /*var storage = multer.diskStorage({
@@ -164,12 +163,6 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
     Logged.remove({}, function(err, removed) {});
-
-    // Object
-    notifier.notify({
-        title: 'My notification',
-        message: 'Hello, there!'
-    });
 
     res.render("login");
 });

@@ -162,7 +162,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-    Logged.remove({}, function(err, removed) {});
+    //Logged.remove({}, function(err, removed) {});
 
     res.render("login");
 });
@@ -416,7 +416,7 @@ io.on("connection", function(socket) {
         let msg = "El curso "+curso.name+" ha pasado a estar "+curso.status+" para matrículas! ";
         curso.status === "disponible" ? msg = msg + "Que esperas para inscribirte?" : msg = msg + "Las clases comenzarán pronto.";
         //alert(msg);
-        socket.emit("show_broadcast", msg); 
+        socket.broadcast.emit("show_broadcast", msg); 
     });
 
     socket.on("room", function(room) {

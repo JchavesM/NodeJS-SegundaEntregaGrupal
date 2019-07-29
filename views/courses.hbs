@@ -105,6 +105,7 @@
             // console.log(data);
         }).done(function () {
             alert("Estado del curso con id " + id + " cambiado con éxito!");
+            socket.emit("broadcast", id);
             location.reload();
         });
     }

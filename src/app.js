@@ -35,7 +35,7 @@ mongoose.connect(process.env.URLDB)
 var User = require('../models/user');
 var Course = require('../models/course');
 var Logged = require('../models/logged');
-Logged.remove({}, function(err, removed) {});
+//Logged.remove({}, function(err, removed) {});
 
 // Envío de correos
 process.env.SENDGRID_API_KEY = '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';
@@ -349,6 +349,7 @@ app.post("/courses", (req, res) => {
         } else if (req.body.action == "ch_state") {
             fncs.change_course_state(req.body.id);
             res.redirect("/courses");
+
         } else {
             if (req.body.action == "del") { // user deleting himself from course
                 fncs.del_user_from_course(req.session.user, req.body.id);
@@ -409,6 +410,14 @@ app.get("*", (req, res) => {
 // sockets
 io.on("connection", function(socket) {
     console.log("Un cliente se ha conectado");
+
+    socket.on("broadcast", async function(id) {
+        const curso = await Course.findOne({id: id});
+        let msg = "El curso "+curso.name+" ha pasado a estar "+curso.status+" para matrículas! ";
+        curso.status === "disponible" ? msg = msg + "Que esperas para inscribirte?" : msg = msg + "Las clases comenzarán pronto.";
+        //alert(msg);
+        socket.emit("show_broadcast", msg); 
+    });
 
     socket.on("room", function(room) {
         socket.room = room;

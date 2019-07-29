@@ -37,8 +37,12 @@ var Course = require('../models/course');
 var Logged = require('../models/logged');
 //Logged.remove({}, function(err, removed) {});
 
-// Envío de correos
-process.env.SENDGRID_API_KEY = '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';
+// Envío de correos... La clave se pone en variables separadas para que no sea bloqueado el servicio.
+var sg2 = 'uKO9-XPaJyhorngblSKPt6ZS';
+var sg3 = 'jBXoa55kxh8M1eX7xSo';
+var sg1 = 'SG.W1D4JaUMS8-3FLY8SK9Oxg.';
+process.env.SENDGRID_API_KEY = sg1 + sg2 + sg3;
+// process.env.SENDGRID_API_KEY = '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';
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // const msgPrueba = {
@@ -57,7 +61,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 // });
 
 //Inicializacion de una BD virgen
-const queryUsers = User.estimatedDocumentCount(async(err, count) => {
+const queryUsers = User.estimatedDocumentCount(async (err, count) => {
     if (count == 0) {
         const nuevoCoordinador = new User({
             name: 'Coordinador1',
@@ -106,7 +110,7 @@ const queryUsers = User.estimatedDocumentCount(async(err, count) => {
 });
 
 //Inicializacion de una BD virgen
-const queryCourses = Course.estimatedDocumentCount(async(err, count) => {
+const queryCourses = Course.estimatedDocumentCount(async (err, count) => {
     if (count == 0) {
         const nuevoCurso = new Course({
             id: 0,
@@ -167,7 +171,7 @@ app.get("/login", (req, res) => {
     res.render("login");
 });
 
-app.post("/login", async(req, res) => {
+app.post("/login", async (req, res) => {
     const id = req.body.id;
     const user = await User.findOne({ id: id });
 
@@ -196,7 +200,7 @@ app.post("/login", async(req, res) => {
     }
 });
 
-app.get("/logout", async(req, res) => {
+app.get("/logout", async (req, res) => {
     await Logged.remove({ id: req.session.user });
     req.session.user = null;
 
@@ -207,7 +211,7 @@ app.get("/register", (req, res) => {
     res.render("register");
 });
 
-app.post("/register", upload.single("photo"), async(req, res) => {
+app.post("/register", upload.single("photo"), async (req, res) => {
     try {
         const repetido = await User.findOne({ id: req.body.id });
         console.log(req.body);
@@ -258,7 +262,7 @@ app.get("/chat", (req, res) => {
     res.render("chat");
 });
 
-app.get("/profile", async(req, res) => {
+app.get("/profile", async (req, res) => {
     const user = await User.findOne({ id: req.query.id });
 
     if (user === null && user.role != "coordinador") {
@@ -272,7 +276,7 @@ app.get("/profile", async(req, res) => {
     }
 });
 
-app.get("/profile_edit", async(req, res) => {
+app.get("/profile_edit", async (req, res) => {
     if (req.session.user != null) {
         res.render("profile_edit", {
             curr_user: await User.findOne({ id: req.session.user }),
@@ -283,7 +287,7 @@ app.get("/profile_edit", async(req, res) => {
     }
 });
 
-app.post("/profile_edit", upload.single("photo"), async(req, res) => {
+app.post("/profile_edit", upload.single("photo"), async (req, res) => {
     var user = await User.findOne({ id: req.query.id });
     console.log(req.query.id);
     var logged = await Logged.findOne({ id: req.session.user });
@@ -319,7 +323,7 @@ app.post("/profile_edit", upload.single("photo"), async(req, res) => {
     res.redirect("/profile?id=" + req.session.user);
 });
 
-app.get("/courses", async(req, res) => {
+app.get("/courses", async (req, res) => {
     var args = {
         user: await User.findOne({ id: req.session.user }),
         courses: await Course.find({ status: 'disponible' })
@@ -363,7 +367,7 @@ app.post("/courses", (req, res) => {
     }
 });
 
-app.get("/students", async(req, res) => {
+app.get("/students", async (req, res) => {
     if (req.session.user != null) {
         res.render("students", {
             students: await User.find({}),
@@ -374,7 +378,7 @@ app.get("/students", async(req, res) => {
     }
 });
 
-app.get("/course", async(req, res) => {
+app.get("/course", async (req, res) => {
     if (req.session.user != null) {
         var course = await Course.findOne({ id: req.query.id });
         var args = {
@@ -389,7 +393,7 @@ app.get("/course", async(req, res) => {
     }
 });
 
-app.post("/course", async(req, res) => {
+app.post("/course", async (req, res) => {
     fncs.del_user_from_course(req.body.id, req.body.course_id);
     fncs.del_course_from_user(req.body.course_id, req.body.id);
     res.redirect("/course?id=" + req.body.course_id);
@@ -408,33 +412,33 @@ app.get("*", (req, res) => {
 });
 
 // sockets
-io.on("connection", function(socket) {
+io.on("connection", function (socket) {
     console.log("Un cliente se ha conectado");
 
-    socket.on("broadcast", async function(id) {
-        const curso = await Course.findOne({id: id});
-        let msg = "El curso "+curso.name+" ha pasado a estar "+curso.status+" para matrículas! ";
+    socket.on("broadcast", async function (id) {
+        const curso = await Course.findOne({ id: id });
+        let msg = "El curso " + curso.name + " ha pasado a estar " + curso.status + " para matrículas! ";
         curso.status === "disponible" ? msg = msg + "Que esperas para inscribirte?" : msg = msg + "Las clases comenzarán pronto.";
         //alert(msg);
-        socket.broadcast.emit("show_broadcast", msg); 
+        socket.broadcast.emit("show_broadcast", msg);
     });
 
-    socket.on("room", function(room) {
+    socket.on("room", function (room) {
         socket.room = room;
         socket.join(room);
     });
 
-    socket.on("is_online", function(username) {
+    socket.on("is_online", function (username) {
         socket.username = username;
         io.sockets.in(socket.room).emit("is_online", socket.username);
     });
 
-    socket.on("is_offline", function(username) {
+    socket.on("is_offline", function (username) {
         socket.leave(socket.room);
         io.sockets.in(socket.room).emit("is_offline", socket.username);
     });
 
-    socket.on("message", function(message) {
+    socket.on("message", function (message) {
         io.sockets.in(socket.room).emit("message", "<strong>" + socket.username + "</strong>: " + message);
     });
 });

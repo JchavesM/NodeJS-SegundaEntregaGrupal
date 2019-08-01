@@ -1,0 +1,30 @@
+{{>header}}
+<div class="container">
+    <div class="container-fluid">
+        <p>{{alert}}</p>
+        <form action="/sendmail?id={{user.id}}" method="post" autocomplete="on">
+            <h2>Envío de correo</h2>
+            <div class="form-group">
+                <label> de: {{user.mail}}</label>
+            </div>
+            <div class="form-group">
+                <label> Para:</label>
+                <input class="form-control" name="receptor" type="text" placeholder="Receptor" />
+            </div>
+            <div class="form-group">
+                <label> Asunto:</label>
+                <input class="form-control" name="asunto" type="text" placeholder="Asunto" />
+            </div>
+            <div class="form-group">
+                <label> Mensaje:</label>
+                <textarea class="form-control" name="mail" type="textarea" placeholder="Escribe tu mensaje aquí..."></textarea>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary">Enviar</button>
+            </div>
+        </form>
+
+        <a class="btn btn-secondary" href="/profile?id={{user.id}}">Atrás</a>
+    </div>
+</div>
+{{>footer}}

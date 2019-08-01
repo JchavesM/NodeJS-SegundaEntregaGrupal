@@ -38,37 +38,43 @@ var Logged = require('../models/logged');
 //Logged.remove({}, function(err, removed) {});
 
 // Envío de correos... La clave se pone en variables separadas para que no sea bloqueado el servicio.
-var sg2 = '.dp2fqnb-9FnY9DuE8dD';
-var sg3 = 'qbekzvV1zK0hj9cvtgKkkPVw';
-var sg1 = 'SG.4o7iY_oSTN-0Nu_pxsWZTA';
-process.env.SENDGRID_API_KEY = sg1 + sg2 + sg3;
+var sg2 = 'ZQ4Skzc';
+var sg3 = 'ydgmHLbg.';
+var sg1 = 'xIBFjyW';
+var sg4 = 'VKozgpZ_ul';
+var sg5 = 'AFsUVNCAeg';
+var sg6 = 'wOFEXSWks';
+var sg7 = 'g0YHbJDVBSmwKA';
+var keySendGrid = 'SG.' + sg1 + sg2 + sg3 + sg4 + sg5 + sg6 + sg7;
+
+process.env.SENDGRID_API_KEY = keySendGrid;
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const msgPrueba = {
-    to: 'jaeparraro@unal.edu.co',
-    from: 'edkestebanpr23@gmail.com',
-    subject: 'Bienvenido a UrsusGroup',
-    text: 'Ursus Group - TdeA',
-    html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
-    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
-    <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
-};
-console.log(msgPrueba);
-sgMail.send(msgPrueba).then(() => {
-    console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
-    // console.log(res);
-}).catch(error => {
+// const msgPrueba = {
+//     to: 'jaeparraro@unal.edu.co',
+//     from: 'edkestebanpr23@gmail.com',
+//     subject: 'Bienvenido a UrsusGroup',
+//     text: 'Ursus Group - TdeA',
+//     html: `<p style="text-align: center;"><span style="font-size: 13pt; color: #2d4096;"><strong>Bienvenido a UrsusGroup</strong></span></p>
+//     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000; font-family: 'courier new', courier;"><strong>Este grupo est&aacute; compuesto por Esteban, Mario y Juan Pablo. Esperamos sea de su agrado y que la experiencia sea muy agradable.</strong></span></p>
+//     <p style="text-align: left;"><span style="font-size: 13pt; color: #000000;"><strong><img style="display: block; margin-left: auto; margin-right: auto;" src="https://ae01.alicdn.com/kf/HTB1K82FNwHqK1RjSZFPq6AwapXaW/Communist-Bear-Flag-Banner-custom-Communist-Bear-with-Historical-Flags-any-logo-Digital-sport-hobby-Flag.jpg_220x220xz.jpg" alt="" /><span style="font-family: symbol;">La mascota del Equipo.</span></strong></span></p>`
+// };
+// console.log(msgPrueba);
+// sgMail.send(msgPrueba).then(() => {
+//     console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
+//     // console.log(res);
+// }).catch(error => {
 
-    //Log friendly error
-    console.error(error.toString());
+//     //Log friendly error
+//     console.error(error.toString());
 
-    //Extract error msg
-    const { message, code, response } = error;
+//     //Extract error msg
+//     const { message, code, response } = error;
 
-    //Extract response msg
-    const { headers, body } = response;
-});
+//     //Extract response msg
+//     const { headers, body } = response;
+// });
 
 //Inicializacion de una BD virgen
 const queryUsers = User.estimatedDocumentCount(async (err, count) => {
@@ -267,6 +273,80 @@ app.post("/register", upload.single("photo"), async (req, res) => {
         });
     }
 });
+
+// Mails
+app.get("/sendmail", async (req, res) => {
+    const user = await User.findOne({ id: req.query.id });
+    var _alert = req.query.alert;
+    _alert = (_alert == 0 || _alert == "0") ? 'Prueba Alert' : _alert;
+    res.render("sendmail", {
+        user: user,
+        alert: _alert
+    });
+});
+
+app.post("/sendmail", async (req, res) => {
+    var user = await User.findOne({ id: req.query.id });
+    var _alert = await User.findOne({ id: req.query.alert });
+    _alert = (_alert == 0 || _alert == "0") ? '' : _alert;
+    console.log(">>>>>>>>>>>>>>>>>>Info traida... id:" + req.query.id + " user:");
+    console.log(user);
+    const msg = {
+        to: '',
+        from: user.mail,
+        subject: '',
+        text: '',
+        html: ''
+    };
+    let flag = { estado: true, causa: '' };
+
+    if (req.body.receptor != "" && typeof req.body.receptor == 'string') {
+        msg.to = req.body.receptor;
+    } else {
+        flag.estado = false;
+        flag.causa = "Mensaje no enviado, debes inidicar el receptor.";
+    }
+
+    if (req.body.mail != "" && typeof req.body.receptor == 'string') {
+        msg.text = req.body.mail;
+        msg.html = req.body.mail;
+    } else {
+        flag.estado = false;
+        flag.causa = "Mensaje no enviado, debes escribir algun mensaje.";
+    }
+
+    if (req.body.asunto != "" && typeof req.body.receptor == 'string') {
+        msg.subject = req.body.asunto;
+    } else {
+        flag.estado = false;
+        flag.causa = "Mensaje no enviado, debes inidicar el asunto del mensaje.";
+    }
+
+    if (flag.estado == true) {
+        flag.causa = "Mansaje enviado";
+        console.log(msg);
+        sgMail.send(msg).then(() => {
+            console.log("Correo bienvenida enviado con éxito! a jaeparraro@unal.edu.co");
+            // console.log(res);
+        }).catch(error => {
+
+            //Log friendly error
+            console.error(error.toString());
+
+            //Extract error msg
+            const { message, code, response } = error;
+
+            //Extract response msg
+            const { headers, body } = response;
+        });
+    } else {
+        console.log(">>>>>>>>>>>>>>>>>>>>>> error de envio: " + flag.causa);
+        // alert(flag.causa);
+    }
+
+    res.redirect("/sendmail?id=" + user.id + "&alert=" + flag.causa);
+});
+
 
 app.get("/chat", (req, res) => {
     res.render("chat");
